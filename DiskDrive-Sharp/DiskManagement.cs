@@ -2,7 +2,7 @@
 
 namespace DiskDrive_Sharp;
 
-public static class DiskDriveManagement
+public static class DiskManagement
 {
     public static Dictionary<uint, DiskDrive> DiskDrives { get; private set; } = [];
     public static void Init(bool includeMainDiskDrive = false)
@@ -23,7 +23,7 @@ public static class DiskDriveManagement
         using ManagementObjectSearcher diskPartitionSearcher = new(QueryCode.GET_DISK_PARTITION);
         foreach (var disk_partition in diskPartitionSearcher.Get())
         {
-            DiskDrivePartition diskDrivePartition = new(disk_partition);
+            DiskPartition diskDrivePartition = new(disk_partition);
 
             if (diskDrivePartition.DiskIndex is null)
             {

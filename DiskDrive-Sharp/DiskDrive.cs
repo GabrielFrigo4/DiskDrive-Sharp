@@ -2,7 +2,7 @@
 
 namespace DiskDrive_Sharp;
 
-public struct DiskDrive(ManagementBaseObject managementBaseObject)
+public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
 {
     public ushort? Availability { get; private set; } = (ushort?)managementBaseObject[nameof(Availability)];
     public uint? BytesPerSector { get; private set; } = (uint?)managementBaseObject[nameof(BytesPerSector)];
@@ -56,9 +56,24 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject)
     public ulong? TotalTracks { get; private set; } = (ulong?)managementBaseObject[nameof(TotalTracks)];
     public uint? TracksPerCylinder { get; private set; } = (uint?)managementBaseObject[nameof(TracksPerCylinder)];
 
-    public Dictionary<string, DiskDrivePartition> DiskDrivePartitions { get; private set; } = [];
+    public Dictionary<string, DiskPartition> DiskDrivePartitions { get; private set; } = [];
 
-    public readonly byte[] ReadRawData(long offset, int lenght)
+    public string GetName()
+    {
+        return Name ?? throw new Exception($"{nameof(Name)} is NULL!");
+    }
+
+    public ulong GetSize()
+    {
+        return Size ?? throw new Exception($"{nameof(Size)} is NULL!");
+    }
+
+    public uint GetIndex()
+    {
+        return Index ?? throw new Exception($"{nameof(Index)} is NULL!");
+    }
+
+    public void ReadRawData(long offset, int lenght, out Span<byte> buffer)
     {
         if (Size is null)
         {
@@ -74,16 +89,19 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject)
             throw new Exception($"Data out of Edges; Size:{Size}, Data Position:{offset + lenght}");
         }
 
-        byte[] buffer = new byte[lenght];
-        using (FileStream fs = new(Name, FileMode.Open, FileAccess.Read))
-        {
-            fs.Seek(offset, SeekOrigin.Begin);
-            fs.Read(buffer, 0, lenght);
-        }
-        return buffer;
+        using FileStream fs = new(Name, FileMode.Open, FileAccess.Read);
+        buffer = new byte[lenght];
+        fs.Seek(offset, SeekOrigin.Begin);
+        fs.Read(buffer);
     }
 
-    public readonly void WriteRawData(byte[] buffer, long offset, int lenght)
+    public void ReadRawData(long offset, int lenght, out byte[] buffer)
+    {
+        ReadRawData(offset, lenght, out Span<byte> spanBuffer);
+        buffer = spanBuffer.ToArray();
+    }
+
+    public void WriteRawData(long offset, int lenght, ReadOnlySpan<byte> buffer)
     {
         if (Size is null)
         {
@@ -101,6 +119,67 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject)
 
         using FileStream fs = new(Name, FileMode.Open, FileAccess.ReadWrite);
         fs.Seek(offset, SeekOrigin.Begin);
-        fs.Write(buffer, 0, lenght);
+        fs.Write(buffer);
+    }
+
+    public void WriteRawData(long offset, int lenght, byte[] buffer)
+    {
+        ReadOnlySpan<byte> spanBuffer = buffer;
+        WriteRawData(offset, lenght, spanBuffer);
+    }
+
+    public void ReadInSteps(long offset, int lenght, out Span<byte> buffer, StepInfo stepInfo)
+    {
+        int total = lenght / stepInfo.MemorySize;
+
+        buffer = new byte[lenght];
+        for (int completed = 1; completed <= total; completed++)
+        {
+            int segmentSize = stepInfo.MemorySize;
+            int pre_completed = completed - 1;
+            if (completed == total)
+            {
+                segmentSize = lenght - pre_completed * stepInfo.MemorySize;
+            }
+
+            ReadRawData(offset + pre_completed * stepInfo.MemorySize, segmentSize, out Span<byte> spanBuffer);
+            spanBuffer.CopyTo(buffer.Slice(pre_completed * stepInfo.MemorySize, segmentSize));
+
+            StepData stepData = new(completed, total);
+            stepInfo.Update?.Invoke(stepData);
+        }
+    }
+
+    public void ReadInSteps(long offset, int lenght, out byte[] buffer, StepInfo stepInfo)
+    {
+        ReadInSteps(offset, lenght, out Span<byte> spanBuffer, stepInfo);
+        buffer = spanBuffer.ToArray();
+    }
+
+    public void WriteInSteps(long offset, int lenght, ReadOnlySpan<byte> buffer, StepInfo stepInfo)
+    {
+        int total = lenght / stepInfo.MemorySize;
+
+        for (int completed = 1; completed <= total; completed++)
+        {
+            int segmentSize = stepInfo.MemorySize;
+            int pre_completed = completed - 1;
+            if (completed == total)
+            {
+                segmentSize = lenght - pre_completed * stepInfo.MemorySize;
+            }
+
+            ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.MemorySize, segmentSize);
+            WriteRawData(offset + pre_completed * stepInfo.MemorySize, segmentSize, bufferSlice);
+
+            StepData stepData = new(completed, total);
+            stepInfo.Update?.Invoke(stepData);
+        }
+    }
+
+    public void WriteInSteps(long offset, int lenght, byte[] buffer, StepInfo stepInfo)
+    {
+        ReadOnlySpan<byte> spanBuffer = buffer;
+        WriteInSteps(offset, lenght, spanBuffer, stepInfo);
     }
 }
