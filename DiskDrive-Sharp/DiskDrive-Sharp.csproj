@@ -17,14 +17,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\..\..\..\..\OneDrive\Imagens\Saved Pictures\Image\HardDrive.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <None Update="HardDrive.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
