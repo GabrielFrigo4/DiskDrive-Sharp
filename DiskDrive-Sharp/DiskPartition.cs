@@ -88,7 +88,7 @@ public class DiskPartition: IDiskData
         buffer = spanBuffer.ToArray();
     }
 
-    public void WriteRawData(long offset, int lenght, ReadOnlySpan<byte> buffer)
+    public void WriteRawData(long offset, ReadOnlySpan<byte> buffer)
     {
         if (Size is null)
         {
@@ -99,9 +99,9 @@ public class DiskPartition: IDiskData
             throw new Exception($"{nameof(Name)} is NULL!");
         }
 
-        if ((long)Size < offset + lenght)
+        if ((long)Size < offset + buffer.Length)
         {
-            throw new Exception($"Data out of Edges; Size:{Size}, Data Position:{offset + lenght}");
+            throw new Exception($"Data out of Edges; Size:{Size}, Data Position:{offset + buffer.Length}");
         }
 
         using FileStream fs = new(Name, FileMode.Open, FileAccess.ReadWrite);
@@ -109,10 +109,10 @@ public class DiskPartition: IDiskData
         fs.Write(buffer);
     }
 
-    public void WriteRawData(long offset, int lenght, byte[] buffer)
+    public void WriteRawData(long offset, byte[] buffer)
     {
         ReadOnlySpan<byte> spanBuffer = buffer;
-        WriteRawData(offset, lenght, spanBuffer);
+        WriteRawData(offset, spanBuffer);
     }
 
     public void ReadInSteps(long offset, int lenght, out Span<byte> buffer, StepInfo stepInfo)
@@ -143,9 +143,9 @@ public class DiskPartition: IDiskData
         buffer = spanBuffer.ToArray();
     }
 
-    public void WriteInSteps(long offset, int lenght, ReadOnlySpan<byte> buffer, StepInfo stepInfo)
+    public void WriteInSteps(long offset, ReadOnlySpan<byte> buffer, StepInfo stepInfo)
     {
-        int total = lenght / stepInfo.MemorySize;
+        int total = buffer.Length / stepInfo.MemorySize;
 
         for (int completed = 1; completed <= total; completed++)
         {
@@ -153,20 +153,20 @@ public class DiskPartition: IDiskData
             int pre_completed = completed - 1;
             if (completed == total)
             {
-                segmentSize = lenght - pre_completed * stepInfo.MemorySize;
+                segmentSize = buffer.Length - pre_completed * stepInfo.MemorySize;
             }
 
             ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.MemorySize, segmentSize);
-            WriteRawData(offset + pre_completed * stepInfo.MemorySize, segmentSize, bufferSlice);
+            WriteRawData(offset + pre_completed * stepInfo.MemorySize, bufferSlice);
 
             StepData stepData = new(completed, total);
             stepInfo.Update?.Invoke(stepData);
         }
     }
 
-    public void WriteInSteps(long offset, int lenght, byte[] buffer, StepInfo stepInfo)
+    public void WriteInSteps(long offset, byte[] buffer, StepInfo stepInfo)
     {
         ReadOnlySpan<byte> spanBuffer = buffer;
-        WriteInSteps(offset, lenght, spanBuffer, stepInfo);
+        WriteInSteps(offset, spanBuffer, stepInfo);
     }
 }
