@@ -2,7 +2,7 @@
 
 namespace DiskDrive_Sharp;
 
-public static class ManagementDiskDrives
+public static class DiskDriveManagement
 {
     public static Dictionary<uint, DiskDrive> DiskDrives { get; private set; } = [];
     public static void Init(bool includeMainDiskDrive = false)
