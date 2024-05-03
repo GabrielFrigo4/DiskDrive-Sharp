@@ -5,7 +5,23 @@
     <RootNamespace>DiskDrive_Sharp</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageIcon>HardDrive.png</PackageIcon>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>DiskDrive-Sharp</Title>
+    <Description>DiskDrive-Sharp is a .NET library that aims to bring classes and functions that facilitate the use, reading and writing of DiskDrive in .NET applications on Windows</Description>
+    <PackageProjectUrl>https://github.com/GabrielFrigo4/DiskDrive-Sharp</PackageProjectUrl>
+    <Copyright>MIT</Copyright>
+    <RepositoryUrl>https://github.com/GabrielFrigo4/DiskDrive-Sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>DiskDrive;Windows</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\..\..\..\OneDrive\Imagens\Saved Pictures\Image\HardDrive.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Management" Version="8.0.0" />
