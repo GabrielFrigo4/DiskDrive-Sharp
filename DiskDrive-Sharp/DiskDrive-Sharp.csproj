@@ -14,6 +14,13 @@
     <RepositoryUrl>https://github.com/GabrielFrigo4/DiskDrive-Sharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>DiskDrive;Windows</PackageTags>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
+    <FileVersion>$(VersionPrefix).0</FileVersion>
+    <PackageReleaseNotes> - Update classes names
+ - Add WORD, DWORD, QWORD and OWORD const
+ - Add Size and Name in DiskDrivePartition struct
+ - Add ReadRawData and WriteRawData in DiskDrivePartition struct</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

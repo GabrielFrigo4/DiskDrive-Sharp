@@ -42,8 +42,8 @@ public static class DiskDriveManagement
     }
 }
 
-public static class QueryCode
+internal static class QueryCode
 {
-    public const string GET_DISK_DRIVE = "SELECT * FROM Win32_DiskDrive";
-    public const string GET_DISK_PARTITION = "SELECT * FROM Win32_LogicalDiskToPartition";
+    internal const string GET_DISK_DRIVE = "SELECT * FROM Win32_DiskDrive";
+    internal const string GET_DISK_PARTITION = "SELECT * FROM Win32_LogicalDiskToPartition";
 }
