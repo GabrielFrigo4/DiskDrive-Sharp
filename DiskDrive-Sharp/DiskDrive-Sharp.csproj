@@ -20,6 +20,7 @@
     <PackageReleaseNotes>
       - Update classes names
       - Add ReadInStep and WriteInStep
+      - Fixed Write Functions
       - Fixed some Bugs
     </PackageReleaseNotes>
   </PropertyGroup>

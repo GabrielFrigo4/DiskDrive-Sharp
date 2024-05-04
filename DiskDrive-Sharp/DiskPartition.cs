@@ -1,4 +1,5 @@
-﻿using System.Management;
+﻿using DiskDrive_Sharp.Utils;
+using System.Management;
 
 namespace DiskDrive_Sharp;
 
@@ -103,6 +104,10 @@ public class DiskPartition: IDiskData
         {
             throw new Exception($"Data out of Edges; Size:{Size}, Data Position:{offset + buffer.Length}");
         }
+        if (buffer.Length % MemoryInt.SECTOR != 0)
+        {
+            throw new Exception($"buffer.Length must be divisible by MemoryInt.SECTOR!");
+        }
 
         using FileStream fs = new(Name, FileMode.Open, FileAccess.ReadWrite);
         fs.Seek(offset, SeekOrigin.Begin);
@@ -145,18 +150,18 @@ public class DiskPartition: IDiskData
 
     public void WriteInSteps(long offset, ReadOnlySpan<byte> buffer, StepInfo stepInfo)
     {
+        if (buffer.Length % MemoryInt.SECTOR != 0)
+        {
+            throw new Exception($"buffer.Length must be divisible by MemoryInt.SECTOR!");
+        }
+
         int total = buffer.Length / stepInfo.MemorySize;
 
         for (int completed = 1; completed <= total; completed++)
         {
-            int segmentSize = stepInfo.MemorySize;
             int pre_completed = completed - 1;
-            if (completed == total)
-            {
-                segmentSize = buffer.Length - pre_completed * stepInfo.MemorySize;
-            }
 
-            ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.MemorySize, segmentSize);
+            ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.MemorySize, stepInfo.MemorySize);
             WriteRawData(offset + pre_completed * stepInfo.MemorySize, bufferSlice);
 
             StepData stepData = new(completed, total);

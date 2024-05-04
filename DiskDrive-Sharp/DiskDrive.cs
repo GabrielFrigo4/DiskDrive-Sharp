@@ -1,4 +1,5 @@
-﻿using System.Management;
+﻿using DiskDrive_Sharp.Utils;
+using System.Management;
 
 namespace DiskDrive_Sharp;
 
@@ -58,22 +59,22 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
 
     public Dictionary<string, DiskPartition> DiskDrivePartitions { get; private set; } = [];
 
-    public string GetName()
+    public readonly string GetName()
     {
         return Name ?? throw new Exception($"{nameof(Name)} is NULL!");
     }
 
-    public ulong GetSize()
+    public readonly ulong GetSize()
     {
         return Size ?? throw new Exception($"{nameof(Size)} is NULL!");
     }
 
-    public uint GetIndex()
+    public readonly uint GetIndex()
     {
         return Index ?? throw new Exception($"{nameof(Index)} is NULL!");
     }
 
-    public void ReadRawData(long offset, int lenght, out Span<byte> buffer)
+    public readonly void ReadRawData(long offset, int lenght, out Span<byte> buffer)
     {
         if (Size is null)
         {
@@ -95,13 +96,13 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
         fs.Read(buffer);
     }
 
-    public void ReadRawData(long offset, int lenght, out byte[] buffer)
+    public readonly void ReadRawData(long offset, int lenght, out byte[] buffer)
     {
         ReadRawData(offset, lenght, out Span<byte> spanBuffer);
         buffer = spanBuffer.ToArray();
     }
 
-    public void WriteRawData(long offset, ReadOnlySpan<byte> buffer)
+    public readonly void WriteRawData(long offset, ReadOnlySpan<byte> buffer)
     {
         if (Size is null)
         {
@@ -116,19 +117,23 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
         {
             throw new Exception($"Data out of Edges; Size:{Size}, Data Position:{offset + buffer.Length}");
         }
+        if (buffer.Length % MemoryInt.SECTOR != 0)
+        {
+            throw new Exception($"buffer.Length must be divisible by MemoryInt.SECTOR!");
+        }
 
         using FileStream fs = new(Name, FileMode.Open, FileAccess.ReadWrite);
         fs.Seek(offset, SeekOrigin.Begin);
         fs.Write(buffer);
     }
 
-    public void WriteRawData(long offset, byte[] buffer)
+    public readonly void WriteRawData(long offset, byte[] buffer)
     {
         ReadOnlySpan<byte> spanBuffer = buffer;
         WriteRawData(offset, spanBuffer);
     }
 
-    public void ReadInSteps(long offset, int lenght, out Span<byte> buffer, StepInfo stepInfo)
+    public readonly void ReadInSteps(long offset, int lenght, out Span<byte> buffer, StepInfo stepInfo)
     {
         int total = lenght / stepInfo.MemorySize;
 
@@ -150,26 +155,26 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
         }
     }
 
-    public void ReadInSteps(long offset, int lenght, out byte[] buffer, StepInfo stepInfo)
+    public readonly void ReadInSteps(long offset, int lenght, out byte[] buffer, StepInfo stepInfo)
     {
         ReadInSteps(offset, lenght, out Span<byte> spanBuffer, stepInfo);
         buffer = spanBuffer.ToArray();
     }
 
-    public void WriteInSteps(long offset, ReadOnlySpan<byte> buffer, StepInfo stepInfo)
+    public readonly void WriteInSteps(long offset, ReadOnlySpan<byte> buffer, StepInfo stepInfo)
     {
+        if (buffer.Length % MemoryInt.SECTOR != 0)
+        {
+            throw new Exception($"buffer.Length must be divisible by MemoryInt.SECTOR!");
+        }
+
         int total = buffer.Length / stepInfo.MemorySize;
 
         for (int completed = 1; completed <= total; completed++)
         {
-            int segmentSize = stepInfo.MemorySize;
             int pre_completed = completed - 1;
-            if (completed == total)
-            {
-                segmentSize = buffer.Length - pre_completed * stepInfo.MemorySize;
-            }
 
-            ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.MemorySize, segmentSize);
+            ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.MemorySize, stepInfo.MemorySize);
             WriteRawData(offset + pre_completed * stepInfo.MemorySize, bufferSlice);
 
             StepData stepData = new(completed, total);
@@ -177,7 +182,7 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
         }
     }
 
-    public void WriteInSteps(long offset, byte[] buffer, StepInfo stepInfo)
+    public readonly void WriteInSteps(long offset, byte[] buffer, StepInfo stepInfo)
     {
         ReadOnlySpan<byte> spanBuffer = buffer;
         WriteInSteps(offset, spanBuffer, stepInfo);
