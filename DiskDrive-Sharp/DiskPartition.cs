@@ -122,20 +122,20 @@ public class DiskPartition: IDiskData
 
     public void ReadInSteps(long offset, int lenght, out Span<byte> buffer, StepInfo stepInfo)
     {
-        int total = lenght / stepInfo.MemorySize;
+        int total = (lenght + stepInfo.SectorSize - 1) / stepInfo.SectorSize;
 
         buffer = new byte[lenght];
         for (int completed = 1; completed <= total; completed++)
         {
-            int segmentSize = stepInfo.MemorySize;
+            int segmentSize = stepInfo.SectorSize;
             int pre_completed = completed - 1;
             if (completed == total)
             {
-                segmentSize = lenght - pre_completed * stepInfo.MemorySize;
+                segmentSize = lenght - pre_completed * stepInfo.SectorSize;
             }
 
-            ReadRawData(offset + pre_completed * stepInfo.MemorySize, segmentSize, out Span<byte> spanBuffer);
-            spanBuffer.CopyTo(buffer.Slice(pre_completed * stepInfo.MemorySize, segmentSize));
+            ReadRawData(offset + pre_completed * stepInfo.SectorSize, segmentSize, out Span<byte> spanBuffer);
+            spanBuffer.CopyTo(buffer.Slice(pre_completed * stepInfo.SectorSize, segmentSize));
 
             StepData stepData = new(completed, total);
             stepInfo.Update?.Invoke(stepData);
@@ -155,14 +155,19 @@ public class DiskPartition: IDiskData
             throw new Exception($"buffer.Length must be divisible by MemoryInt.SECTOR!");
         }
 
-        int total = buffer.Length / stepInfo.MemorySize;
+        int total = (buffer.Length + stepInfo.SectorSize - 1) / stepInfo.SectorSize;
 
         for (int completed = 1; completed <= total; completed++)
         {
+            int segmentSize = stepInfo.SectorSize;
             int pre_completed = completed - 1;
+            if (completed == total)
+            {
+                segmentSize = buffer.Length - pre_completed * stepInfo.SectorSize;
+            }
 
-            ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.MemorySize, stepInfo.MemorySize);
-            WriteRawData(offset + pre_completed * stepInfo.MemorySize, bufferSlice);
+            ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.SectorSize, segmentSize);
+            WriteRawData(offset + pre_completed * stepInfo.SectorSize, bufferSlice);
 
             StepData stepData = new(completed, total);
             stepInfo.Update?.Invoke(stepData);

@@ -10,8 +10,8 @@ public struct StepData(int completed, int total)
     public int Total { get; private set; } = total;
 }
 
-public class StepInfo(int memorySize = MemoryInt.SECTOR, StepUpdate? update = null)
+public class StepInfo(StepUpdate? update = null, int sectorSize = MemoryInt.SECTOR)
 {
-    public int MemorySize { get; private set; } = memorySize;
     public StepUpdate? Update { get; private set; } = update;
+    public int SectorSize { get; private set; } = sectorSize;
 }
