@@ -57,7 +57,7 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
     public ulong? TotalTracks { get; private set; } = (ulong?)managementBaseObject[nameof(TotalTracks)];
     public uint? TracksPerCylinder { get; private set; } = (uint?)managementBaseObject[nameof(TracksPerCylinder)];
 
-    public Dictionary<string, DiskPartition> DiskDrivePartitions { get; private set; } = [];
+    public Dictionary<string, DiskPartition> DiskPartitions { get; private set; } = [];
 
     public readonly string GetName()
     {

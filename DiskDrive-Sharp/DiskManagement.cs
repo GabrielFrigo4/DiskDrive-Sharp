@@ -1,4 +1,5 @@
-﻿using System.Management;
+﻿using DiskDrive_Sharp.Utils;
+using System.Management;
 
 namespace DiskDrive_Sharp;
 
@@ -23,20 +24,25 @@ public static class DiskManagement
         using ManagementObjectSearcher diskPartitionSearcher = new(QueryCode.GET_DISK_PARTITION);
         foreach (var disk_partition in diskPartitionSearcher.Get())
         {
-            DiskPartition diskDrivePartition = new(disk_partition);
+            DiskPartition diskPartition = new(disk_partition);
 
-            if (diskDrivePartition.DiskIndex is null)
+            if (diskPartition.DiskIndex is null)
             {
                 continue;
             }
-            if (diskDrivePartition.Label is null)
+            if (diskPartition.Label is null)
             {
                 continue;
             }
 
-            if (DiskDrives.TryGetValue((uint)diskDrivePartition.DiskIndex, out DiskDrive diskDrive))
+            if (DiskDrives.TryGetValue((uint)diskPartition.DiskIndex, out DiskDrive diskDrive))
             {
-                diskDrive.DiskDrivePartitions.Add(diskDrivePartition.Label, diskDrivePartition);
+                diskDrive.DiskPartitions.Add(diskPartition.Label, diskPartition);
+                if(AplicationDisk.PartitionLabel == diskPartition.Label)
+                {
+                    AplicationDisk.Partition = diskPartition;
+                    AplicationDisk.Drive = diskDrive;
+                }
             }
         }
     }

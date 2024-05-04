@@ -14,13 +14,12 @@
     <RepositoryUrl>https://github.com/GabrielFrigo4/DiskDrive-Sharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>DiskDrive;Windows</PackageTags>
-    <VersionPrefix>1.2.0</VersionPrefix>
+    <VersionPrefix>1.3.0</VersionPrefix>
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <FileVersion>$(VersionPrefix).0</FileVersion>
     <PackageReleaseNotes>
       - Update classes names
-      - Add ReadInStep and WriteInStep
-      - Fixed Write Functions
+      - Add AplicationDisk class
       - Fixed some Bugs
     </PackageReleaseNotes>
   </PropertyGroup>
