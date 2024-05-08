@@ -1,9 +1,8 @@
-﻿using DiskDrive_Sharp.Utils;
-using System.Management;
+﻿using System.Management;
 
 namespace DiskDrive_Sharp;
 
-public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
+public class DiskDrive(ManagementBaseObject managementBaseObject) : DiskAbstract
 {
     public ushort? Availability { get; private set; } = (ushort?)managementBaseObject[nameof(Availability)];
     public uint? BytesPerSector { get; private set; } = (uint?)managementBaseObject[nameof(BytesPerSector)];
@@ -59,137 +58,23 @@ public struct DiskDrive(ManagementBaseObject managementBaseObject): IDiskData
 
     public Dictionary<string, DiskPartition> DiskPartitions { get; private set; } = [];
 
-    public readonly string GetName()
+    public override string GetName()
     {
         return Name ?? throw new Exception($"{nameof(Name)} is NULL!");
     }
 
-    public readonly ulong GetSize()
+    public override ulong GetSize()
     {
         return Size ?? throw new Exception($"{nameof(Size)} is NULL!");
     }
 
-    public readonly uint GetIndex()
+    public override uint GetIndex()
     {
         return Index ?? throw new Exception($"{nameof(Index)} is NULL!");
     }
 
-    public readonly void ReadRawData(long offset, int lenght, out Span<byte> buffer)
+    public override uint GetBytesPerSector()
     {
-        if (Size is null)
-        {
-            throw new Exception($"{nameof(Size)} is NULL!");
-        }
-        if (Name is null)
-        {
-            throw new Exception($"{nameof(Name)} is NULL!");
-        }
-
-        if ((long)Size < offset + lenght)
-        {
-            throw new Exception($"Data out of Edges; Size:{Size}, Data Position:{offset + lenght}");
-        }
-
-        using FileStream fs = new(Name, FileMode.Open, FileAccess.Read);
-        buffer = new byte[lenght];
-        fs.Seek(offset, SeekOrigin.Begin);
-        fs.Read(buffer);
-    }
-
-    public readonly void ReadRawData(long offset, int lenght, out byte[] buffer)
-    {
-        ReadRawData(offset, lenght, out Span<byte> spanBuffer);
-        buffer = spanBuffer.ToArray();
-    }
-
-    public readonly void WriteRawData(long offset, ReadOnlySpan<byte> buffer)
-    {
-        if (Size is null)
-        {
-            throw new Exception($"{nameof(Size)} is NULL!");
-        }
-        if (Name is null)
-        {
-            throw new Exception($"{nameof(Name)} is NULL!");
-        }
-
-        if ((long)Size < offset + buffer.Length)
-        {
-            throw new Exception($"Data out of Edges; Size:{Size}, Data Position:{offset + buffer.Length}");
-        }
-        if (buffer.Length % MemoryInt.SECTOR != 0)
-        {
-            throw new Exception($"buffer.Length must be divisible by MemoryInt.SECTOR!");
-        }
-
-        using FileStream fs = new(Name, FileMode.Open, FileAccess.ReadWrite);
-        fs.Seek(offset, SeekOrigin.Begin);
-        fs.Write(buffer);
-    }
-
-    public readonly void WriteRawData(long offset, byte[] buffer)
-    {
-        ReadOnlySpan<byte> spanBuffer = buffer;
-        WriteRawData(offset, spanBuffer);
-    }
-
-    public readonly void ReadInSteps(long offset, int lenght, out Span<byte> buffer, StepInfo stepInfo)
-    {
-        int total = (lenght + stepInfo.SectorSize - 1) / stepInfo.SectorSize;
-
-        buffer = new byte[lenght];
-        for (int completed = 1; completed <= total; completed++)
-        {
-            int segmentSize = stepInfo.SectorSize;
-            int pre_completed = completed - 1;
-            if (completed == total)
-            {
-                segmentSize = lenght - pre_completed * stepInfo.SectorSize;
-            }
-
-            ReadRawData(offset + pre_completed * stepInfo.SectorSize, segmentSize, out Span<byte> spanBuffer);
-            spanBuffer.CopyTo(buffer.Slice(pre_completed * stepInfo.SectorSize, segmentSize));
-
-            StepData stepData = new(completed, total);
-            stepInfo.Update?.Invoke(stepData);
-        }
-    }
-
-    public readonly void ReadInSteps(long offset, int lenght, out byte[] buffer, StepInfo stepInfo)
-    {
-        ReadInSteps(offset, lenght, out Span<byte> spanBuffer, stepInfo);
-        buffer = spanBuffer.ToArray();
-    }
-
-    public readonly void WriteInSteps(long offset, ReadOnlySpan<byte> buffer, StepInfo stepInfo)
-    {
-        if (buffer.Length % MemoryInt.SECTOR != 0)
-        {
-            throw new Exception($"buffer.Length must be divisible by MemoryInt.SECTOR!");
-        }
-
-        int total = (buffer.Length + stepInfo.SectorSize - 1) / stepInfo.SectorSize;
-
-        for (int completed = 1; completed <= total; completed++)
-        {
-            int segmentSize = stepInfo.SectorSize;
-            int pre_completed = completed - 1;
-            if (completed == total)
-            {
-                segmentSize = buffer.Length - pre_completed * stepInfo.SectorSize;
-            }
-
-            ReadOnlySpan<byte> bufferSlice = buffer.Slice(pre_completed * stepInfo.SectorSize, segmentSize);
-            WriteRawData(offset + pre_completed * stepInfo.SectorSize, bufferSlice);
-
-            StepData stepData = new(completed, total);
-            stepInfo.Update?.Invoke(stepData);
-        }
-    }
-
-    public readonly void WriteInSteps(long offset, byte[] buffer, StepInfo stepInfo)
-    {
-        ReadOnlySpan<byte> spanBuffer = buffer;
-        WriteInSteps(offset, spanBuffer, stepInfo);
+        return BytesPerSector ?? throw new Exception($"{nameof(BytesPerSector)} is NULL!");
     }
 }

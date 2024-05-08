@@ -9,9 +9,9 @@ public static class DiskManagement
     public static void Init(bool includeMainDiskDrive = false)
     {
         using ManagementObjectSearcher diskDriveSearcher = new(QueryCode.GET_DISK_DRIVE);
-        foreach (var disk_drive in diskDriveSearcher.Get())
+        foreach (var obj_disk_drive in diskDriveSearcher.Get())
         {
-            DiskDrive diskDrive = new(disk_drive);
+            DiskDrive diskDrive = new(obj_disk_drive);
 
             if (((diskDrive.Index == 0 || diskDrive.Name == @"\\.\PHYSICALDRIVE0") &&
                 !includeMainDiskDrive) || diskDrive.Index is null)
@@ -22,9 +22,9 @@ public static class DiskManagement
         }
 
         using ManagementObjectSearcher diskPartitionSearcher = new(QueryCode.GET_DISK_PARTITION);
-        foreach (var disk_partition in diskPartitionSearcher.Get())
+        foreach (var obj_disk_partition in diskPartitionSearcher.Get())
         {
-            DiskPartition diskPartition = new(disk_partition);
+            DiskPartition diskPartition = new(obj_disk_partition);
 
             if (diskPartition.DiskIndex is null)
             {
@@ -35,8 +35,9 @@ public static class DiskManagement
                 continue;
             }
 
-            if (DiskDrives.TryGetValue((uint)diskPartition.DiskIndex, out DiskDrive diskDrive))
+            if (DiskDrives.TryGetValue((uint)diskPartition.DiskIndex, out DiskDrive? diskDrive))
             {
+                diskPartition.DiskDrive = diskDrive;
                 diskDrive.DiskPartitions.Add(diskPartition.Label, diskPartition);
                 if(AplicationDisk.PartitionLabel == diskPartition.Label)
                 {

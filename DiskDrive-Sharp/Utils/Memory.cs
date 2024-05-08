@@ -12,7 +12,8 @@ public static class MemoryInt
     public const int QWORD = 2 * DWORD;
     public const int OWORD = 2 * QWORD;
 
-    public const int SECTOR = 512 * BYTE;
+    public const int SECTOR_512B = 512 * BYTE;
+    public const int SECTOR_4KB = 4 * KBYTE;
 }
 
 public static class MemoryUInt
@@ -27,7 +28,8 @@ public static class MemoryUInt
     public const uint QWORD = 2 * DWORD;
     public const uint OWORD = 2 * QWORD;
 
-    public const uint SECTOR = 512 * BYTE;
+    public const uint SECTOR_512B = 512 * BYTE;
+    public const uint SECTOR_4KB = 4 * KBYTE;
 }
 
 public static class MemoryLong
@@ -42,7 +44,8 @@ public static class MemoryLong
     public const long QWORD = 2 * DWORD;
     public const long OWORD = 2 * QWORD;
 
-    public const long SECTOR = 512 * BYTE;
+    public const long SECTOR_512B = 512 * BYTE;
+    public const long SECTOR_4KB = 4 * KBYTE;
 }
 
 public static class MemoryULong
@@ -57,5 +60,6 @@ public static class MemoryULong
     public const ulong QWORD = 2 * DWORD;
     public const ulong OWORD = 2 * QWORD;
 
-    public const ulong SECTOR = 512 * BYTE;
+    public const ulong SECTOR_512B = 512 * BYTE;
+    public const ulong SECTOR_4KB = 4 * KBYTE;
 }
