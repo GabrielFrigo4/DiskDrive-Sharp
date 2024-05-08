@@ -14,18 +14,10 @@
     <RepositoryUrl>https://github.com/GabrielFrigo4/DiskDrive-Sharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>DiskDrive;DiskDevice;MemoryDrive;MemoryDevice;Memory;Windows</PackageTags>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>2.0.1</VersionPrefix>
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <FileVersion>$(VersionPrefix).0</FileVersion>
-    <PackageReleaseNotes>
-      - Add DeviceDisk Class
-      - Add new Abstractions
-      - Add Block Logic
-      - Update Memory Constants
-      - Update DiskPartition
-      - Fix Read and Write Function
-      - Add new Read and Write Functions
-      - Add new Read and Write Algorithm
+    <PackageReleaseNotes>- Fixed WriteInBlocks (lockVolume = false) -> (lockVolume = true)
     </PackageReleaseNotes>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>

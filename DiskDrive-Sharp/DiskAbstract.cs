@@ -178,7 +178,7 @@ public abstract class DiskAbstract : IDiskData
         WriteBlock(block, readOnlySpanBuffer, lockVolume);
     }
 
-    public void WriteInBlocks(long offset, ReadOnlySpan<byte> buffer, bool lockVolume = false, BlockCreate? blockCreate = null)
+    public void WriteInBlocks(long offset, ReadOnlySpan<byte> buffer, bool lockVolume = true, BlockCreate? blockCreate = null)
     {
         byte[] arrayBuffer = buffer.ToArray();
         void BlockCreateFunction(BlockCreateData blockCreateData)
@@ -190,7 +190,7 @@ public abstract class DiskAbstract : IDiskData
         GetBlockDataLoop(offset, buffer.Length, BlockCreateFunction);
     }
 
-    public void WriteInBlocks(long offset, byte[] buffer, bool lockVolume = false, BlockCreate? blockCreate = null)
+    public void WriteInBlocks(long offset, byte[] buffer, bool lockVolume = true, BlockCreate? blockCreate = null)
     {
         ReadOnlySpan<byte> spanBuffer = buffer;
         WriteInBlocks(offset, spanBuffer, lockVolume, blockCreate);
