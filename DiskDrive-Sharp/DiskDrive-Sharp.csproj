@@ -21,7 +21,7 @@
       - Add DeviceDisk Class
       - Add new Abstractions
       - Add Block Logic
-      - Update Memory Consts
+      - Update Memory Constants
       - Update DiskPartition
       - Fix Read and Write Function
       - Add new Read and Write Functions

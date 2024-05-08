@@ -6,15 +6,15 @@ namespace DiskDrive_Sharp;
 public static class DiskManagement
 {
     public static Dictionary<uint, DiskDrive> DiskDrives { get; private set; } = [];
-    public static void Init(bool includeMainDiskDrive = false)
+    public static Dictionary<string, DiskPartition> DiskPartitions { get; private set; } = [];
+    public static void Init(bool includeMainDisk = false)
     {
         using ManagementObjectSearcher diskDriveSearcher = new(QueryCode.GET_DISK_DRIVE);
         foreach (var obj_disk_drive in diskDriveSearcher.Get())
         {
             DiskDrive diskDrive = new(obj_disk_drive);
 
-            if (((diskDrive.Index == 0 || diskDrive.Name == @"\\.\PHYSICALDRIVE0") &&
-                !includeMainDiskDrive) || diskDrive.Index is null)
+            if ((diskDrive.Index == 0 && !includeMainDisk) || diskDrive.Index is null)
             {
                 continue;
             }
@@ -34,6 +34,12 @@ public static class DiskManagement
             {
                 continue;
             }
+
+            if ((diskPartition.DiskIndex == 0 && !includeMainDisk) || diskPartition.Label is null)
+            {
+                continue;
+            }
+            DiskPartitions.Add(diskPartition.Label, diskPartition);
 
             if (DiskDrives.TryGetValue((uint)diskPartition.DiskIndex, out DiskDrive? diskDrive))
             {
