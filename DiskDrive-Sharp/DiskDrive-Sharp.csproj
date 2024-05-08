@@ -17,8 +17,7 @@
     <VersionPrefix>2.0.1</VersionPrefix>
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <FileVersion>$(VersionPrefix).0</FileVersion>
-    <PackageReleaseNotes>- Fixed WriteInBlocks (lockVolume = false) -> (lockVolume = true)
-    </PackageReleaseNotes>
+    <PackageReleaseNotes>- Fixed WriteInBlocks (lockVolume = false) -&gt; (lockVolume = true)</PackageReleaseNotes>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
